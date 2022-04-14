@@ -8,6 +8,12 @@ struct Cpu_usage {
 	long int idle, working, wait_io, interrupt;
 };
 
+// current max length of rasberry identifier
+#define max_revision 6
+
+/*
+ * Small helper function for debugging
+ */
 void print_cpu_usage(struct Cpu_usage cpu_usage){
 	printf("Idle: %ld, Working %ld, Wait on IO: %ld, interrupt: %ld \n", cpu_usage.idle, cpu_usage.working, cpu_usage.wait_io, cpu_usage.interrupt);
 }
@@ -18,6 +24,36 @@ void print_cpu_usage(struct Cpu_usage cpu_usage){
 //	system("echo '---------- END OF OUTPUT -----------' >> topOutput.txt");
 //	return 0;
 //}
+
+/*
+ * Read the proc file and get the release date number to identify rasberry
+ */
+char *read_release_number(){
+	char* token;
+	//return value
+	char* serial = malloc(max_revision);
+	const char divisor[2] = " \t";
+	char str [100];
+
+	//open proc stat file
+	FILE* proc_cpuinfo = fopen("/proc/cpuinfo","r");
+	
+	//loop through every line in file
+	int line = 0;
+	while(fgets(str, sizeof(str), proc_cpuinfo)){
+		//first word is category
+		token = strtok(str,divisor);
+		//if the first word is revision then retrieve number
+		if(token != NULL && strcmp(token, "Revision") == 0){	
+			//retrieve release number
+			token = strtok(NULL, divisor);
+			token = strtok(NULL, divisor);
+			strncpy(serial, token, max_revision);
+		}
+	}
+	fclose(proc_cpuinfo);
+	return serial;
+}
 
 /*
  * Read the proc file and retrieve relevant information
@@ -78,16 +114,46 @@ struct Cpu_usage *read_proc_stat(long num_proc){
 	return cpu_usages;
 }
 
+/*
+ * Calculating the cpu utilization from to measurements
+ */
+long double calculate_cpu_utilization(struct Cpu_usage old, struct Cpu_usage new){
+	//calculate difference of time measurements
+	long working_time = new.working - old.working;
+	long non_working_time = (new.idle - old.idle) + (new.wait_io - old.wait_io) + (new.interrupt -old.interrupt);
+	// return (working time / time overall) 
+	printf("working time: %ld, waiting time: %ld \n", working_time, non_working_time);
+	return ((long double) working_time / (working_time + non_working_time)) * 100;
+}
+
+/*
+ * Return the number of processors on the chip
+ */
 long get_number_of_processors(){
 	return sysconf(_SC_NPROCESSORS_ONLN);
 }
 
+/*
+ * Main function to collect statistic
+ * time_span in s for linux and ms for windows
+ */
+void collect_statistics(int time_span, long num_of_proc) {
+	
+	struct Cpu_usage *cpu_usage_old = read_proc_stat(num_of_proc);
+	sleep(time_span);
+	struct Cpu_usage *cpu_usage_new = read_proc_stat(num_of_proc);
+
+	for(int i = 0; i <= num_of_proc; i++){
+		print_cpu_usage(cpu_usage_old[i]);
+		print_cpu_usage(cpu_usage_new[i]);
+		printf("cpu utilization: %lf", calculate_cpu_utilization(cpu_usage_old[i], cpu_usage_new[i]));
+	}
+}
+
 int main(void)
 {
-	long number_of_processors = get_number_of_processors();
-	struct Cpu_usage *cpu_usage = read_proc_stat(number_of_processors);
-	for(int i = 0; i <= number_of_processors; i++){
-		print_cpu_usage(cpu_usage[i]);
-	}
+	//long number_of_processors = get_number_of_processors();
+	//collect_statistics(10, number_of_processors);
+	printf("Revision: %s",read_release_number());
 	return 0;
 }
