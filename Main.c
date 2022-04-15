@@ -2,20 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "Struct.h"
 
-// struct for the information relating to the utilization of a cpu
-struct Cpu_usage {
-	long int idle, working, wait_io, interrupt;
-};
-
-// current max length of rasberry identifier
-#define max_revision 6
 
 /*
  * Small helper function for debugging
  */
 void print_cpu_usage(struct Cpu_usage cpu_usage){
-	printf("Idle: %ld, Working %ld, Wait on IO: %ld, interrupt: %ld \n", cpu_usage.idle, cpu_usage.working, cpu_usage.wait_io, cpu_usage.interrupt);
+	printf("Idle: %ld, Working %ld, Wait on IO: %ld, interrupt: %ld \n", 
+			cpu_usage.idle, cpu_usage.working, 
+			cpu_usage.wait_io, cpu_usage.interrupt);
 }
 
 //int read_top_cmd()
@@ -24,6 +20,41 @@ void print_cpu_usage(struct Cpu_usage cpu_usage){
 //	system("echo '---------- END OF OUTPUT -----------' >> topOutput.txt");
 //	return 0;
 //}
+
+/*
+ * Read the ip adress and port from file
+ */
+struct Server_info *read_server_info(){
+	char* token;
+	const char divisor[2] = ":";
+	char str [100];
+	//create struct for server adress
+	struct Server_info *server_info = malloc(sizeof(struct Server_info));
+
+	//open proc stat file
+	FILE* config = fopen("config","r");
+	
+	//loop through every line in file
+	int line = 0;
+	while(fgets(str, sizeof(str), config)){
+		//first word is category
+		token = strtok(str,divisor);
+		//save ip and port
+		if(token != NULL){
+			if(strcmp(token, "ip") == 0){
+				token = strtok(NULL, divisor);
+				server_info->server_ip = malloc(max_ipv4_length);
+				strncpy(server_info->server_ip, token, max_ipv4_length);
+			}
+			if(strcmp(token, "port") == 0){
+				token = strtok(NULL, divisor);
+				server_info->port = atoi(token);
+			}
+		}
+	}
+	fclose(config);
+	return server_info;
+}
 
 /*
  * Read the proc file and get the release date number to identify rasberry
@@ -154,6 +185,8 @@ int main(void)
 {
 	//long number_of_processors = get_number_of_processors();
 	//collect_statistics(10, number_of_processors);
-	printf("Revision: %s",read_release_number());
+	//printf("Revision: %s",read_release_number());
+	struct Server_info *server_info = read_server_info();
+	printf("Server ip: %s | Server port %d", server_info->server_ip, server_info->port);
 	return 0;
 }
