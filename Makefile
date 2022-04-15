@@ -1,18 +1,22 @@
 CC = gcc
-CFLAGS = -g
+CFLAGS = -g -lm
+SRCDIR = src
+BUILDDIR = build
+
 RM = rm -f
 
-default: main socket
+default: Main
 
-main: Main
 
-socket: Socket
+Main: Main.o Socket.o Struct.h
+	$(CC) $(CFLAGS) Main.o Socket.o -o Main
 
-MAIN: Main.c Struct.h
-	$(CC) $(CFLAGS) -o Main Main.c
+Socket.o: Socket.c
+	$(CC) $(CFLAGS) -c Socket.c -o Socket.o
 
-SOCKET: Socket.c
-	$(CC) $(CFLAGS) -o Socket Socket.c
+Main.o: Main.c
+	$(CC) $(CFLAGS) -c Main.c -o Main.o
 
 clean cleanall:
+	$(RM) *.o
 	$(RM) Main

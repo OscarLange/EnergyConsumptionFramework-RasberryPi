@@ -1,8 +1,10 @@
 #ifndef STRUCT_H_
 #define STRUCT_H_
 
+//buffer size for msg
+#define MAXLINE 1024
 // current max length of rasberry identifier
-#define max_revision 6
+#define max_revision 10
 // max length of ipv4 255.255.255.255 => 15
 #define max_ipv4_length 15
 // max length of ipv6 255.255.255.255.255.255 => 23
