@@ -59,6 +59,8 @@ while 1:
                 print(sanitized_content);
                 if("Start collecting" in sanitized_content):
                     mutex.acquire()
+                    #dont collect values while the work is initializing
+                    sleep(3)
                     t = Thread(target = read_ina219, args = ())
                     t.start()
                 elif ("Stop collecting" in sanitized_content):
