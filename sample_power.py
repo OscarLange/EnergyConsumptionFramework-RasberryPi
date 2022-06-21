@@ -48,49 +48,60 @@ sock.listen(0);
 
 #main loop to wait on incoming msg
 while 1:
-    client, addr = sock.accept();
-    while 1:
-        content = client.recv(2048);
-        if len(content) == 0:
-            break;
-        else:
-            sanitized_content = sanitize_output(content)
-            print(sanitized_content);
-            if("Start collecting" in sanitized_content):
-                mutex.acquire()
-                t = Thread(target = read_ina219, args = ())
-                t.start()
-            elif ("Stop collecting" in sanitized_content):
-                mutex.release()
-                t.join()
+    client, addr = sock.accept();    
+    try:
+        while 1:
+            content = client.recv(2048);
+            if len(content) == 0:
+                break;
             else:
-                got_entry = ""
-                entries = sanitized_content.split(";")
-                needed_values = ["work_task", "main", "IDLE", "IDLE"]
-                for needed_value in needed_values:
-                    for entry in entries:
-                        print(needed_value + " , " + entry);
-                        if needed_value in entry:
-                            print("found");
-                            appendix = "," + entry.split(",")[1] + "," + entry.split(",")[2]
-                            print(appendix);
-                            stored_values = [value + appendix for value in stored_values]
-                            got_entry = entry
-                            break
-                    entries.remove(got_entry)
-                for value in stored_values:
-                    print(value)
-                 
-                with open('wlan_test.csv', 'a') as f:
-                    try:
-                        for value in stored_values:
-                            print(value)
-                            f.write(value)
-                            f.write("\n")
-                    except DeviceRangeError as e:
-                        print('Current to large!')
-                stored_values = []
-                
-        client.send(ack.encode());
-    print("Closing connection");
-    client.close();
+                sanitized_content = sanitize_output(content)
+                print(sanitized_content);
+                if("Start collecting" in sanitized_content):
+                    mutex.acquire()
+                    t = Thread(target = read_ina219, args = ())
+                    t.start()
+                elif ("Stop collecting" in sanitized_content):
+                    mutex.release()
+                    t.join()
+                else:
+                    got_entry = ""
+                    entries = sanitized_content.split(";")
+                    needed_values = ["work_task", "main", "IDLE", "IDLE"]
+                    needed_values_2 = ["MIN_FREQ", "MAX_FREQ"]
+                    for needed_value in needed_values:
+                        for entry in entries:
+                            print(needed_value + " , " + entry);
+                            if needed_value in entry:
+                                appendix = "," + entry.split(",")[1] + "," + entry.split(",")[2]
+                                stored_values = [value + appendix for value in stored_values]
+                                got_entry = entry
+                                break
+                    
+                    for needed_value in needed_values_2:
+                        for entry in entries:
+                            print(needed_value + " , " + entry);
+                            if needed_value in entry:
+                                appendix = "," + entry.split(",")[1]
+                                stored_values = [value + appendix for value in stored_values]
+                                got_entry = entry
+                                break
+                    
+                        entries.remove(got_entry)
+                    for value in stored_values:
+                        print(value)
+                     
+                    with open('add_test.csv', 'a') as f:
+                        try:
+                            for value in stored_values:
+                                print(value)
+                                f.write(value)
+                                f.write("\n")
+                        except DeviceRangeError as e:
+                            print('Current to large!')
+                    stored_values = []
+            client.send(ack.encode());
+
+    except KeyboardInterrupt:                    
+        print("Closing connection");
+        client.close();
