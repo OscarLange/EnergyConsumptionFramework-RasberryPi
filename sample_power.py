@@ -93,7 +93,7 @@ while 1:
                     for value in stored_values:
                         print(value)
                      
-                    with open('add_test.csv', 'a') as f:
+                    with open('mul_test.csv', 'a') as f:
                         try:
                             for value in stored_values:
                                 print(value)
@@ -106,4 +106,5 @@ while 1:
 
     except KeyboardInterrupt:                    
         print("Closing connection");
-        client.close();
+        socket.shutdown(socket.SHUT_RDWR);
+        socket.close();
