@@ -2,12 +2,26 @@ from ina219 import INA219, DeviceRangeError
 from time import sleep
 import socket
 from threading import Thread, Lock
+import sys
 
 #set mutex
 mutex = Lock()
 
 #Acknowledge message 
 ack = "Acknowledged";
+freq_switch = "Freq Switch"
+config_switch = "Config Switch"
+
+#test parameters
+cpu_frequencies = [80, 160, 240]
+cpu_utilization = [25, 50, 100]
+work_files = ["noop_test.csv", "add_test.csv", "sub_test.csv", "mul_test.csv", "div_test.csv", "addf_test.csv", "subf_test.csv", "mulf_test.csv", "divf_test.csv"]
+
+#determines which config is currently running
+config_index = 0
+cur_freq_index = 0
+cur_util_index = 0
+cur_work_index = 0
 
 #Resistance of Resistor inside INA219
 SHUNT_OHM = 0.1
@@ -18,9 +32,54 @@ ina = INA219(SHUNT_OHM, MAX_CURRENT)
 ina.configure(ina.RANGE_16V, ina.GAIN_1_40MV)
 
 stored_values = []
+
+#print current configuration
+def print_configuration():
+    print("Config:" + str(cpu_frequencies[cur_freq_index]) + "," + str(cpu_utilization[cur_util_index]) + "," + str(work_files[cur_work_index]))
+
+#increase configuration
+def inc_configuration():
+    global cur_work_index, cur_util_index, cur_freq_index, config_index
+    if(config_index < int(sys.argv[1])):
+        config_index += 1
+        return
+
+    config_index = 0
+
+    if cur_work_index < (len(work_files)-1):
+        cur_work_index += 1
+        return
+    
+    cur_work_index = 0
+    if cur_util_index < (len(cpu_utilization)-1):
+        cur_util_index += 1
+        return
+    
+    cur_util_index = 0
+    if cur_freq_index < (len(cpu_frequencies)-1):
+        cur_freq_index += 1
+        return
+    
+    cur_freq_index = 0
+
 #sanitize_espoutput
 def sanitize_output(input):
     return input.decode();
+
+#average out every collected value
+def avg_values(stored_values):
+    avg_uges, avg_iges, avg_pges, avg_ushunt = 0,0,0,0
+    for stored_value in stored_values:
+        value_list = stored_value.split(",")
+        avg_uges += float(value_list[0])
+        avg_iges += float(value_list[1])
+        avg_pges += float(value_list[2])
+        avg_ushunt += float(value_list[3])
+    avg_uges /= len(stored_values)
+    avg_iges /= len(stored_values)
+    avg_pges /= len(stored_values)
+    avg_ushunt /= len(stored_values)
+    return str(avg_uges) + "," + str(avg_iges) + "," + str(avg_pges) + "," + str(avg_ushunt)
 
 #read ina values and store in file
 def read_ina219():
@@ -28,19 +87,21 @@ def read_ina219():
     while(not mutex.acquire(False)):
         values = ""
         Uges = ina.voltage() + ina.shunt_voltage()/1000
-        print('Ubat  : {0:0.2f}V'.format(Uges))
+        print('Ubat  : {0:0.6f}V'.format(Uges))
         values += '{0:0.2f},'.format(Uges)
-        print('Iges  : {0:0.2f}mA'.format(ina.current()))
+        print('Iges  : {0:0.10f}mA'.format(ina.current()))
         values += '{0:0.2f},'.format(ina.current())
-        print('Pges  : {0:0.2f}mW'.format(ina.power()))
+        print('Pges  : {0:0.10f}mW'.format(ina.power()))
         values += '{0:0.2f},'.format(ina.power())
-        print('Ushunt  : {0:0.2f}mV\n'.format(ina.shunt_voltage()))
-        values += '{0:0.2f}'.format(ina.shunt_voltage())
+        print('Ushunt  : {0:0.3f}mV\n'.format(ina.shunt_voltage()))
+        values += '{0:0.10f}'.format(ina.shunt_voltage())
         print(values)
         stored_values.append(values)
         sleep(1)
     mutex.release();
     
+start_mode = False
+
 #create socket to listen on
 sock = socket.socket();
 sock.bind(('0.0.0.0', 8090));
@@ -48,9 +109,11 @@ sock.listen(0);
 
 #main loop to wait on incoming msg
 while 1:
+    print("waiting for client")
     client, addr = sock.accept();    
     try:
         while 1:
+            print("waiting for next connection")
             content = client.recv(2048);
             if len(content) == 0:
                 break;
@@ -58,15 +121,63 @@ while 1:
                 sanitized_content = sanitize_output(content)
                 print(sanitized_content);
                 if("Start collecting" in sanitized_content):
+                    start_values = (sanitized_content.split(":")[1]).split(",")
+                    if(int(start_values[0]) != cpu_frequencies[cur_freq_index]):
+                        print(start_values[0] + "," + str(cpu_frequencies[cur_freq_index]))
+                        raise ValueError("CPU frequencies dont match")
+                    if(int(start_values[1]) != cpu_utilization[cur_util_index]):
+                        print(start_values[1] + "," + str(cpu_utilization[cur_util_index]))
+                        raise ValueError("CPU utilization doesnt match")
+                    if(int(start_values[2]) != cur_work_index):
+                        print(start_values[2] + "," + str(cur_work_index))
+                        raise ValueError("Work types doesnt match")
+                    start_mode = True
                     mutex.acquire()
+                    client.send(ack.encode());
                     #dont collect values while the work is initializing
-                    sleep(3)
+                    sleep(5)
                     t = Thread(target = read_ina219, args = ())
                     t.start()
                 elif ("Stop collecting" in sanitized_content):
                     mutex.release()
                     t.join()
+                    if config_index == int(sys.argv[1]):
+                        if cur_work_index == (len(work_files)-1) and cur_util_index == (len(cpu_utilization)-1):
+                            print("Frequency switch")
+                            client.send(freq_switch.encode());
+                        else:
+                            print("Config switch")
+                            client.send(config_switch.encode());
+                    else:
+                        client.send(ack.encode());
+                    inc_configuration()
+                    start_mode = False
+                elif ("Request config" in sanitized_content):
+                    if(start_mode):
+                        mutex.release()
+                        t.join()
+                        stored_values = []
+                        start_mode = False
+                    answer = str(cur_work_index) + "," + str(cpu_frequencies[cur_freq_index]) + ";"
+                    client.send(answer.encode());
+                    #close connection because esp32 needs to restart after resetting config
+                    client.close();
+                    break;
+                elif ("Get work" in sanitized_content):
+                    if(start_mode):
+                        mutex.release()
+                        t.join()
+                        stored_values = []
+                        start_mode = False
+                    answer = str(cur_work_index) + "," + str(cpu_utilization[cur_util_index]) + ";"
+                    client.send(answer.encode());
                 else:
+                    if(start_mode):
+                        mutex.release()
+                        t.join()
+                        stored_values = []
+                        start_mode = False
+                    avg_value = avg_values(stored_values) 
                     got_entry = ""
                     entries = sanitized_content.split(";")
                     needed_values = ["work_task", "main", "IDLE", "IDLE"]
@@ -76,8 +187,10 @@ while 1:
                             print(needed_value + " , " + entry);
                             if needed_value in entry:
                                 appendix = "," + entry.split(",")[1] + "," + entry.split(",")[2]
-                                stored_values = [value + appendix for value in stored_values]
+                                avg_value += appendix
+                                #stored_values = [value + appendix for value in stored_values]
                                 got_entry = entry
+                                entries.remove(got_entry)
                                 break
                     
                     for needed_value in needed_values_2:
@@ -85,26 +198,30 @@ while 1:
                             print(needed_value + " , " + entry);
                             if needed_value in entry:
                                 appendix = "," + entry.split(",")[1]
-                                stored_values = [value + appendix for value in stored_values]
+                                avg_value += appendix
+                                #stored_values = [value + appendix for value in stored_values]
                                 got_entry = entry
+                                entries.remove(got_entry)
                                 break
                     
-                        entries.remove(got_entry)
-                    for value in stored_values:
-                        print(value)
-                     
-                    with open('mul_test.csv', 'a') as f:
+                    #for value in stored_values:
+                        #print(value)
+                    print("Writting: " + avg_value + "| to =>" + work_files[cur_work_index])
+
+                    with open(work_files[cur_work_index], 'a') as f:
                         try:
-                            for value in stored_values:
-                                print(value)
-                                f.write(value)
-                                f.write("\n")
+                            #for value in stored_values:
+                                #print(value)
+                                #f.write(value)
+                                #f.write("\n")
+                            f.write(avg_value)
+                            f.write("\n")
                         except DeviceRangeError as e:
                             print('Current to large!')
                     stored_values = []
-            client.send(ack.encode());
+                    client.send(ack.encode());
 
     except KeyboardInterrupt:                    
         print("Closing connection");
-        socket.shutdown(socket.SHUT_RDWR);
-        socket.close();
+        sock.shutdown(socket.SHUT_RDWR);
+        sock.close();
