@@ -14,14 +14,14 @@ config_switch = "Config Switch"
 
 #test parameters
 cpu_frequencies = [80, 160, 240]
-cpu_utilization = [25, 50, 100]
+cpu_utilization = [25, 50, 75, 100]
 work_files = ["noop_test.csv", "add_test.csv", "sub_test.csv", "mul_test.csv", "div_test.csv", "addf_test.csv", "subf_test.csv", "mulf_test.csv", "divf_test.csv"]
 
 #determines which config is currently running
 config_index = 0
 cur_freq_index = 0
-cur_util_index = 0
-cur_work_index = 0
+cur_util_index = 3
+cur_work_index = 1
 
 #Resistance of Resistor inside INA219
 SHUNT_OHM = 0.1
