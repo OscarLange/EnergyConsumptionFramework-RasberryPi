@@ -20,8 +20,17 @@ work_files = ["noop_test.csv", "add_test.csv", "sub_test.csv", "mul_test.csv", "
 #determines which config is currently running
 config_index = 0
 cur_freq_index = 0
-cur_util_index = 3
+cur_util_index = 2
 cur_work_index = 1
+
+work_mode = ""
+#test or training data
+if int(sys.argv[2]) == 1:
+    print("Test MODE")
+    work_mode = "./test/"
+else:
+    print("Training Mode")
+    work_mode = "./training/"
 
 #Resistance of Resistor inside INA219
 SHUNT_OHM = 0.1
@@ -207,8 +216,8 @@ while 1:
                     #for value in stored_values:
                         #print(value)
                     print("Writting: " + avg_value + "| to =>" + work_files[cur_work_index])
-
-                    with open(work_files[cur_work_index], 'a') as f:
+                    file_name = work_mode + work_files[cur_work_index]
+                    with open(file_name, 'a') as f:
                         try:
                             #for value in stored_values:
                                 #print(value)
@@ -216,6 +225,7 @@ while 1:
                                 #f.write("\n")
                             f.write(avg_value)
                             f.write("\n")
+
                         except DeviceRangeError as e:
                             print('Current to large!')
                     stored_values = []
