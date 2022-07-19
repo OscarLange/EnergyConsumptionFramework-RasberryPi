@@ -16,21 +16,25 @@ config_switch = "Config Switch"
 cpu_frequencies = [80, 160, 240]
 cpu_utilization = [25, 50, 75, 100]
 work_files = ["noop_test.csv", "add_test.csv", "sub_test.csv", "mul_test.csv", "div_test.csv", "addf_test.csv", "subf_test.csv", "mulf_test.csv", "divf_test.csv"]
+work_files = ["add_test.csv"]
 
 #determines which config is currently running
 config_index = 0
 cur_freq_index = 0
-cur_util_index = 2
-cur_work_index = 1
+cur_util_index = 0
+cur_work_index = 0
 
 work_mode = ""
 #test or training data
 if int(sys.argv[2]) == 1:
     print("Test MODE")
     work_mode = "./test/"
-else:
+elif int(sys.argv[2]) == 0:
     print("Training Mode")
     work_mode = "./training/"
+else:
+    print("Debug Mode")
+    work_files = ["debug_test.csv"]
 
 #Resistance of Resistor inside INA219
 SHUNT_OHM = 0.1
@@ -78,6 +82,9 @@ def sanitize_output(input):
 #average out every collected value
 def avg_values(stored_values):
     avg_uges, avg_iges, avg_pges, avg_ushunt = 0,0,0,0
+    print(len(stored_values))
+    stored_values = stored_values[:-2]
+    print(len(stored_values))
     for stored_value in stored_values:
         value_list = stored_value.split(",")
         avg_uges += float(value_list[0])
