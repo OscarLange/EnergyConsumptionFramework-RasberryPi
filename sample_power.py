@@ -20,8 +20,8 @@ work_files = ["add_test.csv"]
 
 #determines which config is currently running
 config_index = 0
-cur_freq_index = 2
-cur_util_index = 3
+cur_freq_index = 0
+cur_util_index = 0
 cur_work_index = 0
 
 work_mode = ""
@@ -51,6 +51,7 @@ def print_configuration():
     print("Config:" + str(cpu_frequencies[cur_freq_index]) + "," + str(cpu_utilization[cur_util_index]) + "," + str(work_files[cur_work_index]))
 
 #increase configuration
+#function switches through different configuration modes
 def inc_configuration():
     global cur_work_index, cur_util_index, cur_freq_index, config_index
     if(config_index < int(sys.argv[1])):
@@ -125,10 +126,12 @@ sock.listen(0);
 
 #main loop to wait on incoming msg
 while 1:
+    #connect to client
     print("waiting for client")
     client, addr = sock.accept();    
     try:
         while 1:
+            #wait for msg
             print("waiting for next connection")
             content = client.recv(2048);
             if len(content) == 0:
@@ -136,6 +139,7 @@ while 1:
             else:
                 sanitized_content = sanitize_output(content)
                 print(sanitized_content);
+                #start the collection process
                 if("Start collecting" in sanitized_content):
                     start_values = (sanitized_content.split(":")[1]).split(",")
                     if(int(start_values[0]) != cpu_frequencies[cur_freq_index]):
@@ -152,11 +156,15 @@ while 1:
                     client.send(ack.encode());
                     #dont collect values while the work is initializing
                     sleep(5)
+
+                    #start another thread that reads the GPIO
                     t = Thread(target = read_ina219, args = ())
                     t.start()
                 elif ("Stop collecting" in sanitized_content):
+                    #stop other task
                     mutex.release()
                     t.join()
+                    #if one configuration is done tell client to switch modes
                     if config_index == int(sys.argv[1]):
                         if cur_work_index == (len(work_files)-1) and cur_util_index == (len(cpu_utilization)-1):
                             print("Frequency switch")
@@ -169,6 +177,8 @@ while 1:
                     inc_configuration()
                     start_mode = False
                 elif ("Request config" in sanitized_content):
+                    #if client crashed and requests config while the server is collecting data
+                    #then restart
                     if(start_mode):
                         mutex.release()
                         t.join()
@@ -180,6 +190,8 @@ while 1:
                     client.close();
                     break;
                 elif ("Get work" in sanitized_content):
+                    #if client crashed and requests config while the server is collecting data
+                    #then restart
                     if(start_mode):
                         mutex.release()
                         t.join()
@@ -188,11 +200,14 @@ while 1:
                     answer = str(cur_work_index) + "," + str(cpu_utilization[cur_util_index]) + ";"
                     client.send(answer.encode());
                 else:
+                    #if client crashed and requests config while the server is collecting data
+                    #then restart
                     if(start_mode):
                         mutex.release()
                         t.join()
                         stored_values = []
                         start_mode = False
+                    #split values and reformat to fit into csv file
                     avg_value = avg_values(stored_values) 
                     got_entry = ""
                     entries = sanitized_content.split(";")
@@ -220,16 +235,11 @@ while 1:
                                 entries.remove(got_entry)
                                 break
                     
-                    #for value in stored_values:
-                        #print(value)
+                    #write back to file
                     print("Writting: " + avg_value + "| to =>" + work_files[cur_work_index])
                     file_name = work_mode + work_files[cur_work_index]
                     with open(file_name, 'a') as f:
                         try:
-                            #for value in stored_values:
-                                #print(value)
-                                #f.write(value)
-                                #f.write("\n")
                             f.write(avg_value)
                             f.write("\n")
 
@@ -238,7 +248,9 @@ while 1:
                     stored_values = []
                     client.send(ack.encode());
 
-    except KeyboardInterrupt:                    
+    except KeyboardInterrupt:          
+        #program is only stop-able through external cancel
+        #so shut down socket to free the port if possible          
         print("Closing connection");
         sock.shutdown(socket.SHUT_RDWR);
         sock.close();
