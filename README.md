@@ -11,8 +11,6 @@ How often per configuration do you collect data
 Just changes which files are written to
 {mode} => training 0 test 1 debug 2 
 
-{Freq} => 240 160 80
-
 ## Graph data
 Use the functions described in graph.py 
 
