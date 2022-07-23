@@ -18,49 +18,62 @@ dir_path = os.path.dirname(os.path.realpath(__file__)) + "/"
 #headers = ["Ubat","Iges","Pges","Ushunt","workTime","workPerc","mainTime","mainPerc","Idle1Time","Idle1Perc","Idle2Time","Idle2Perc","MIN_FREQ","MAX_FREQ"]
 
 #read training data
-df1 = pd.read_csv('./training/noop_test.csv')
-df2 = pd.read_csv('./training/add_test.csv')
-df3 = pd.read_csv('./training/sub_test.csv')
-df4 = pd.read_csv('./training/mul_test.csv')
-df5 = pd.read_csv('./training/div_test.csv')
-df6 = pd.read_csv('./training/addf_test.csv')
-df7 = pd.read_csv('./training/subf_test.csv')
-df8 = pd.read_csv('./training/mulf_test.csv')
-df9 = pd.read_csv('./training/divf_test.csv')
+# df1 = pd.read_csv('./first_try/training/noop_test.csv')
+# df2 = pd.read_csv('./first_try/training/add_test.csv')
+# df3 = pd.read_csv('./first_try/training/sub_test.csv')
+# df4 = pd.read_csv('./first_try/training/mul_test.csv')
+# df5 = pd.read_csv('./first_try/training/div_test.csv')
+# df6 = pd.read_csv('./first_try/training/addf_test.csv')
+# df7 = pd.read_csv('./first_try/training/subf_test.csv')
+# df8 = pd.read_csv('./first_try/training/mulf_test.csv')
+# df9 = pd.read_csv('./first_try/training/divf_test.csv')
 
 
-#sort training data 
-df1 = df1.sort_values(by=['MIN_FREQ', 'workPerc'])
-df2 = df2.sort_values(by=['MIN_FREQ', 'workPerc'])
-df3 = df3.sort_values(by=['MIN_FREQ', 'workPerc'])
-df4 = df4.sort_values(by=['MIN_FREQ', 'workPerc'])
-df5 = df5.sort_values(by=['MIN_FREQ', 'workPerc'])
-df6 = df6.sort_values(by=['MIN_FREQ', 'workPerc'])
-df7 = df7.sort_values(by=['MIN_FREQ', 'workPerc'])
-df8 = df8.sort_values(by=['MIN_FREQ', 'workPerc'])
-df9 = df9.sort_values(by=['MIN_FREQ', 'workPerc'])
+# #sort training data 
+# df1 = df1.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df2 = df2.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df3 = df3.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df4 = df4.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df5 = df5.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df6 = df6.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df7 = df7.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df8 = df8.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df9 = df9.sort_values(by=['MIN_FREQ', 'workPerc'])
 
-#read test data
-df1_1 = pd.read_csv('./test/noop_test.csv')
-df1_2 = pd.read_csv('./test/add_test.csv')
-df1_3 = pd.read_csv('./test/sub_test.csv')
-df1_4 = pd.read_csv('./test/mul_test.csv')
-df1_5 = pd.read_csv('./test/div_test.csv')
-df1_6 = pd.read_csv('./test/addf_test.csv')
-df1_7 = pd.read_csv('./test/subf_test.csv')
-df1_8 = pd.read_csv('./test/mulf_test.csv')
-df1_9 = pd.read_csv('./test/divf_test.csv')
+# #read test data
+# df1_1 = pd.read_csv('./test/noop_test.csv')
+# df1_2 = pd.read_csv('./test/add_test.csv')
+# df1_3 = pd.read_csv('./test/sub_test.csv')
+# df1_4 = pd.read_csv('./test/mul_test.csv')
+# df1_5 = pd.read_csv('./test/div_test.csv')
+# df1_6 = pd.read_csv('./test/addf_test.csv')
+# df1_7 = pd.read_csv('./test/subf_test.csv')
+# df1_8 = pd.read_csv('./test/mulf_test.csv')
+# df1_9 = pd.read_csv('./test/divf_test.csv')
 
-#sort test data
-df1_1 = df1_1.sort_values(by=['MIN_FREQ', 'workPerc'])
-df1_2 = df1_2.sort_values(by=['MIN_FREQ', 'workPerc'])
-df1_3 = df1_3.sort_values(by=['MIN_FREQ', 'workPerc'])
-df1_4 = df1_4.sort_values(by=['MIN_FREQ', 'workPerc'])
-df1_5 = df1_5.sort_values(by=['MIN_FREQ', 'workPerc'])
-df1_6 = df1_6.sort_values(by=['MIN_FREQ', 'workPerc'])
-df1_7 = df1_7.sort_values(by=['MIN_FREQ', 'workPerc'])
-df1_8 = df1_8.sort_values(by=['MIN_FREQ', 'workPerc'])
-df1_9 = df1_9.sort_values(by=['MIN_FREQ', 'workPerc'])
+# #sort test data
+# df1_1 = df1_1.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df1_2 = df1_2.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df1_3 = df1_3.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df1_4 = df1_4.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df1_5 = df1_5.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df1_6 = df1_6.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df1_7 = df1_7.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df1_8 = df1_8.sort_values(by=['MIN_FREQ', 'workPerc'])
+# df1_9 = df1_9.sort_values(by=['MIN_FREQ', 'workPerc'])
+
+#improved training data
+df2_new = pd.read_csv('./training/add_test.csv')
+
+#sort improved training data
+df2_new = df2_new.sort_values(by=['MIN_FREQ', 'workPerc'])
+
+#improved test data
+df1_2_new = pd.read_csv('./test/add_test.csv')
+
+#sort improved test data
+df1_2_new = df1_2_new.sort_values(by=['MIN_FREQ', 'workPerc'])
+
 
 #add binary columns to indicate the operand type
 def combine_with_columns(df1, df2, df3, df4, df5, df6, df7, df8, df9):
@@ -100,8 +113,8 @@ def drop_irrelevant_features(df):
 
 def random_forrest():
     #training_frame = combine_training_frames()
-    training_frame = combine_with_columns(df1, df2, df3, df4, df5, df6, df7, df8, df9)
-    test_frame = combine_with_columns(df1_1, df1_2, df1_3, df1_4, df1_5, df1_6, df1_7, df1_8, df1_9)
+    training_frame = df2_new
+    test_frame = df1_2_new
     #test_frame = combine_test_frames()
 
     labels = np.array(training_frame["Pges"])
@@ -111,7 +124,7 @@ def random_forrest():
     feature_list = list(training_frame.columns)
     features = np.array(training_frame)
 
-    rf = RandomForestRegressor(n_estimators=2000, random_state=42)
+    rf = RandomForestRegressor(n_estimators=500, random_state=42)
     rf.fit(features, labels)
 
     predictions = rf.predict(features)
@@ -142,14 +155,16 @@ def random_forrest():
     print(meae)
 
 
-
 def numpy_polyfit():
-    training_frame = combine_training_frames()
-    test_frame = combine_test_frames()
+    #training_frame = combine_training_frames()
+    #test_frame = combine_test_frames()
 
     #sort for graph of 2nd degree
-    training_frame = training_frame.sort_values(by=['workPerc'])
-    test_frame = test_frame.sort_values(by=['workPerc'])
+    #training_frame = training_frame.sort_values(by=['workPerc'])
+    #test_frame = test_frame.sort_values(by=['workPerc'])
+
+    training_frame = df2_new
+    test_frame = df1_2_new
 
     df_tmp=training_frame[training_frame["MIN_FREQ"] == 80]
     df_tmp1=training_frame[training_frame["MIN_FREQ"] == 160]
@@ -343,8 +358,8 @@ def three_dimensional_plane():
     )
     plt.show()
 
-#random_forrest()
-numpy_polyfit()
+random_forrest()
+#numpy_polyfit()
 #sk_learn_regression()
 #sk_learn_ridge_regression()
 #three_dimensional_scatter()
