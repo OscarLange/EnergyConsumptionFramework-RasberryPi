@@ -1,3 +1,6 @@
 config
 Main
 *.o
+bluez-5.50
+bluez-5.50.tar.xz
+
