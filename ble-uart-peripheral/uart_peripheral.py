@@ -25,6 +25,7 @@ class TxCharacteristic(Characteristic):
         GLib.io_add_watch(sys.stdout, GLib.IO_IN, self.on_console_input)
 
     def on_console_input(self, fd, condition):
+        print("Called")
         s = fd.readline()
         if s.isspace():
             pass
