@@ -18,18 +18,18 @@ LOCAL_NAME =                   'rpi-gatt-server'
 mainloop = None
 
 class TxCharacteristic(Characteristic):
-    def __init__(self, bus, index, service):
+    def __init__(self, bus, index, service, fd):
         Characteristic.__init__(self, bus, index, UART_TX_CHARACTERISTIC_UUID,
-                                ['notify'], service)
+                                ['notify'], service, fd)
         self.notifying = False
-        GLib.io_add_watch(sys.stdout, GLib.IO_IN, self.on_console_input)
+        GLib.io_add_watch(self.fd, GLib.IO_IN, self.on_console_input)
 
     def on_console_input(self, fd, condition):
         print("Called")
         s = fd.readline()
         if s.isspace():
             pass
-        elif "hello" in s:
+        else:
             self.send_tx(s)
         return True
 
@@ -52,18 +52,20 @@ class TxCharacteristic(Characteristic):
         self.notifying = False
 
 class RxCharacteristic(Characteristic):
-    def __init__(self, bus, index, service):
+    def __init__(self, bus, index, service, fd):
         Characteristic.__init__(self, bus, index, UART_RX_CHARACTERISTIC_UUID,
-                                ['write'], service)
+                                ['write'], service, fd)
 
     def WriteValue(self, value, options):
+        self.fd.write('{} \n'.format(bytearray(value).decode()))
         print('remote: {}'.format(bytearray(value).decode()))
 
 class UartService(Service):
     def __init__(self, bus, index):
         Service.__init__(self, bus, index, UART_SERVICE_UUID, True)
-        self.add_characteristic(TxCharacteristic(bus, 0, self))
-        self.add_characteristic(RxCharacteristic(bus, 1, self))
+        fd = open("log.txt")
+        self.add_characteristic(TxCharacteristic(bus, 0, self, fd))
+        self.add_characteristic(RxCharacteristic(bus, 1, self, fd))
 
 class Application(dbus.service.Object):
     def __init__(self, bus):
