@@ -1,6 +1,11 @@
 # EnergyConsumptionFramework-RasberryPi
 The rasberry pi code for the energy consumption framework
 
+## Installing bluepy
+
+$ sudo apt-get install python3-pip libglib2.0-dev
+$ sudo pip3 install bluepy
+
 ## Measure Consumption
 Execute command like this to collect stats:
 python3 sample_power.py {num_iterations} {mode}
