@@ -2,11 +2,7 @@ import binascii
 import sys
 from bluepy import btle
 from time import sleep
-from ina219 import INA219, DeviceRangeError
 from threading import Thread, Lock
-
-#set mutex
-mutex = Lock()
 
 #test parameters
 cpu_frequencies = [80, 160, 240]
@@ -48,54 +44,6 @@ def inc_configuration():
         return
     
     cur_freq_index = 0
-
-
-#average out every collected value
-def avg_values(stored_values):
-    avg_uges, avg_iges, avg_pges, avg_ushunt = 0,0,0,0
-    print(len(stored_values))
-    stored_values = stored_values[:-2]
-    print(len(stored_values))
-    for stored_value in stored_values:
-        value_list = stored_value.split(",")
-        avg_uges += float(value_list[0])
-        avg_iges += float(value_list[1])
-        avg_pges += float(value_list[2])
-        avg_ushunt += float(value_list[3])
-    avg_uges /= len(stored_values)
-    avg_iges /= len(stored_values)
-    avg_pges /= len(stored_values)
-    avg_ushunt /= len(stored_values)
-    return str(avg_uges) + "," + str(avg_iges) + "," + str(avg_pges) + "," + str(avg_ushunt)
-
-#read ina values and store in file
-def read_ina219():
-    global stored_values
-    while(not mutex.acquire(False)):
-        values = ""
-        Uges = ina.voltage() + ina.shunt_voltage()/1000
-        print('Ubat  : {0:0.6f}V'.format(Uges))
-        values += '{0:0.2f},'.format(Uges)
-        print('Iges  : {0:0.10f}mA'.format(ina.current()))
-        values += '{0:0.2f},'.format(ina.current())
-        print('Pges  : {0:0.10f}mW'.format(ina.power()))
-        values += '{0:0.2f},'.format(ina.power())
-        print('Ushunt  : {0:0.3f}mV\n'.format(ina.shunt_voltage()))
-        values += '{0:0.10f}'.format(ina.shunt_voltage())
-        print(values)
-        stored_values.append(values)
-        sleep(0.1)
-    mutex.release();
-
-#Resistance of Resistor inside INA219
-SHUNT_OHM = 0.1
-MAX_CURRENT = 0.4
-
-#ina configurations
-ina = INA219(SHUNT_OHM, MAX_CURRENT)
-ina.configure(ina.RANGE_16V, ina.GAIN_1_40MV)
-
-stored_values = []
 
 print("Connecting ...")
 dev = btle.Peripheral("78:21:84:78:c8:36")
@@ -141,16 +89,10 @@ while(1):
         if "Start" in val:
             CharacteristicB = ServiceB.getCharacteristics(0xEE01)[0]
             sleep_timer = 10
-            mutex.acquire()
             CharacteristicB.write(bytes("Ok", "utf-8"))
             #dont collect values while the work is initializing
             sleep(5)
-            #start another thread that reads the GPIO
-            t = Thread(target = read_ina219, args = ())
-            t.start()
         if "Stop" in val:
-            mutex.release()
-            t.join()
             CharacteristicB = ServiceB.getCharacteristics(0xEE01)[0]
             sleep_timer = 3
             if config_index == int(sys.argv[1]):
@@ -162,21 +104,6 @@ while(1):
                     CharacteristicB.write(bytes("1", "utf-8"))
             else:
                 CharacteristicB.write(bytes("0", "utf-8"))
-            avg_value = avg_values(stored_values)
-            avg_value += "," + str(cpu_frequencies[cur_freq_index])
-            avg_value += "," + str(cpu_utilization[cur_util_index])
-            write back to file
-            print("Writting: " + avg_value + "| to =>" + work_files[cur_work_index])
-            file_name = "./test/" + work_files[cur_work_index]
-            with open(file_name, 'a') as f:
-                try:
-                    f.write(avg_value)
-                    f.write("\n")
-                except DeviceRangeError as e:
-                    print('Current to large!')
-
-            stored_values = []
-
             inc_configuration()
     print_configuration()
     sleep(sleep_timer)
