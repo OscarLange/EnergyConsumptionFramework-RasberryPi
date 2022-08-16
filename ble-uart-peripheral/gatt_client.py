@@ -15,9 +15,9 @@ work_files = ["noop_test.csv", "add_test.csv", "sub_test.csv", "mul_test.csv", "
 
 #determines which config is currently running
 config_index = 0
-cur_freq_index =1 
-cur_util_index = 3
-cur_work_index = 1
+cur_freq_index = 0 
+cur_util_index = 0
+cur_work_index = 0
 
 #print current configuration
 def print_configuration():
@@ -53,9 +53,6 @@ def inc_configuration():
 #average out every collected value
 def avg_values(stored_values):
     avg_uges, avg_iges, avg_pges, avg_ushunt = 0,0,0,0
-    print(len(stored_values))
-    stored_values = stored_values[:-2]
-    print(len(stored_values))
     for stored_value in stored_values:
         value_list = stored_value.split(",")
         avg_uges += float(value_list[0])
@@ -74,17 +71,11 @@ def read_ina219():
     while(not mutex.acquire(False)):
         values = ""
         Uges = ina.voltage() + ina.shunt_voltage()/1000
-        print('Ubat  : {0:0.6f}V'.format(Uges))
         values += '{0:0.2f},'.format(Uges)
-        print('Iges  : {0:0.10f}mA'.format(ina.current()))
         values += '{0:0.2f},'.format(ina.current())
-        print('Pges  : {0:0.10f}mW'.format(ina.power()))
         values += '{0:0.2f},'.format(ina.power())
-        print('Ushunt  : {0:0.3f}mV\n'.format(ina.shunt_voltage()))
         values += '{0:0.10f}'.format(ina.shunt_voltage())
-        print(values)
         stored_values.append(values)
-        sleep(0.1)
     mutex.release();
 
 #Resistance of Resistor inside INA219
@@ -144,7 +135,7 @@ while(1):
             mutex.acquire()
             CharacteristicB.write(bytes("Ok", "utf-8"))
             #dont collect values while the work is initializing
-            sleep(5)
+            sleep(1)
             #start another thread that reads the GPIO
             t = Thread(target = read_ina219, args = ())
             t.start()
@@ -162,16 +153,15 @@ while(1):
                     CharacteristicB.write(bytes("1", "utf-8"))
             else:
                 CharacteristicB.write(bytes("0", "utf-8"))
-            avg_value = avg_values(stored_values)
-            avg_value += "," + str(cpu_frequencies[cur_freq_index])
-            avg_value += "," + str(cpu_utilization[cur_util_index])
-            write back to file
-            print("Writting: " + avg_value + "| to =>" + work_files[cur_work_index])
-            file_name = "./test/" + work_files[cur_work_index]
+            #avg_value = avg_values(stored_values)
+            #write back to file
+            print("Writting to =>" + work_files[cur_work_index])
+            file_name = "./training/" + work_files[cur_work_index]
             with open(file_name, 'a') as f:
                 try:
-                    f.write(avg_value)
-                    f.write("\n")
+                    for val in stored_values:
+                        f.write(val + "," + str(cpu_frequencies[cur_freq_index])+ "," + str(cpu_utilization[cur_util_index]))
+                        f.write("\n")
                 except DeviceRangeError as e:
                     print('Current to large!')
 
