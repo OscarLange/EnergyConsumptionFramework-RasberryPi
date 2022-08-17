@@ -20,7 +20,7 @@ work_files = ["add_test.csv"]
 
 #determines which config is currently running
 config_index = 0
-cur_freq_index = 0
+cur_freq_index = 1
 cur_util_index = 0
 cur_work_index = 0
 

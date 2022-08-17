@@ -15,9 +15,9 @@ work_files = ["noop_test.csv", "add_test.csv", "sub_test.csv", "mul_test.csv", "
 
 #determines which config is currently running
 config_index = 0
-cur_freq_index = 0 
-cur_util_index = 0
-cur_work_index = 0
+cur_freq_index = 2 
+cur_util_index = 3
+cur_work_index = 4
 
 #print current configuration
 def print_configuration():
