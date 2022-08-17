@@ -29,11 +29,11 @@ while(i < 10000):
     read_ina219()
     i += 1
 
-file_name = "./test_noop.csv"
+file_name = "./test_add.csv"
 with open(file_name, 'a') as f:
     try:
         for val in stored_values:
-            f.write(val + ",80\n")
+            f.write(val + ",160\n")
     except DeviceRangeError as e:
         print('Current to large!')
 
