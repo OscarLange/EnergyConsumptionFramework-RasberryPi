@@ -1,3 +1,5 @@
+from telnetlib import X3PAD
+from tkinter import Y
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -63,17 +65,21 @@ dir_path = os.path.dirname(os.path.realpath(__file__)) + "/"
 # df1_9 = df1_9.sort_values(by=['MIN_FREQ', 'workPerc'])
 
 #improved training data
-df2_new = pd.read_csv('./training/add_test.csv')
+#df2_new = pd.read_csv('./training/add_test.csv')
 
 #sort improved training data
-df2_new = df2_new.sort_values(by=['MIN_FREQ', 'workPerc'])
+#df2_new = df2_new.sort_values(by=['MIN_FREQ', 'workPerc'])
 
 #improved test data
-df1_2_new = pd.read_csv('./test/add_test.csv')
+#df1_2_new = pd.read_csv('./test/add_test.csv')
 
 #sort improved test data
-df1_2_new = df1_2_new.sort_values(by=['MIN_FREQ', 'workPerc'])
+#df1_2_new = df1_2_new.sort_values(by=['MIN_FREQ', 'workPerc'])
 
+df = pd.read_csv('./ble-uart-peripheral/training/add_test.csv')
+df = df.sort_values(by=['FREQ', 'CPU_UTIL'])
+df_2 = pd.read_csv('./test_noop.csv')
+print(df_2)
 
 #add binary columns to indicate the operand type
 def combine_with_columns(df1, df2, df3, df4, df5, df6, df7, df8, df9):
@@ -358,10 +364,26 @@ def three_dimensional_plane():
     )
     plt.show()
 
-random_forrest()
+def two_dimensional_plane():
+    df1=df_2[df_2["FREQ"] == 80] 
+    df2=df_2[df_2["FREQ"] == 160] 
+    df3=df_2[df_2["FREQ"] == 240] 
+    x1 = df1[["Pges"]].to_numpy()
+    x2 = df2[["Pges"]].to_numpy()
+    x3 = df3[["Pges"]].to_numpy()
+    print(x1)
+    print(x2)
+    print(x3)
+    plt.plot([i for i in range(len(x1))], x1, color="green")
+    plt.plot([i+len(x1) for i in range(len(x2))], x2, color="yellow")
+    plt.plot([i+len(x1)+len(x2) for i in range(len(x3))], x3, color="red")
+    plt.show()
+
+#random_forrest()
 #numpy_polyfit()
 #sk_learn_regression()
 #sk_learn_ridge_regression()
 #three_dimensional_scatter()
 #three_dimensional_plane()
 #seaborn_regression()
+two_dimensional_plane()
