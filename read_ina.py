@@ -29,7 +29,7 @@ while(i < 10000):
     read_ina219()
     i += 1
 
-file_name = "./test_linkedlist4.csv"
+file_name = "./test_add16.csv"
 with open(file_name, 'a') as f:
     try:
         for val in stored_values:
