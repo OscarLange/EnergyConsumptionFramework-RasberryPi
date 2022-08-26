@@ -78,8 +78,19 @@ dir_path = os.path.dirname(os.path.realpath(__file__)) + "/"
 
 df = pd.read_csv('./ble-uart-peripheral/training/add_test.csv')
 df = df.sort_values(by=['FREQ', 'CPU_UTIL'])
-df_2 = pd.read_csv('./test_noop.csv')
-print(df_2)
+df_1 = pd.read_csv('./test_ble.csv')
+df_2 = pd.read_csv('./test_ble4.csv')
+
+print("Add2: ")
+print(df_1["Pges"].max())
+print(df_1["Pges"].min())
+print(df_1["Pges"].mean())
+
+print("Add: ")
+print(df_2["Pges"].max())
+print(df_2["Pges"].min())
+print(df_2["Pges"].mean())
+
 
 #add binary columns to indicate the operand type
 def combine_with_columns(df1, df2, df3, df4, df5, df6, df7, df8, df9):
@@ -365,18 +376,34 @@ def three_dimensional_plane():
     plt.show()
 
 def two_dimensional_plane():
-    df1=df_2[df_2["FREQ"] == 80] 
-    df2=df_2[df_2["FREQ"] == 160] 
-    df3=df_2[df_2["FREQ"] == 240] 
-    x1 = df1[["Pges"]].to_numpy()
-    x2 = df2[["Pges"]].to_numpy()
-    x3 = df3[["Pges"]].to_numpy()
-    print(x1)
-    print(x2)
-    print(x3)
-    plt.plot([i for i in range(len(x1))], x1, color="green")
-    plt.plot([i+len(x1) for i in range(len(x2))], x2, color="yellow")
-    plt.plot([i+len(x1)+len(x2) for i in range(len(x3))], x3, color="red")
+    x1_1 = df_1[["Pges"]].to_numpy()
+    # df1_1=df_1[df_1["FREQ"] == 80] 
+    # df1_2=df_1[df_1["FREQ"] == 160] 
+    # df1_3=df_1[df_1["FREQ"] == 240] 
+    # x1_1 = df1_1[["Pges"]].to_numpy()
+    # x1_2 = df1_2[["Pges"]].to_numpy()
+    # x1_3 = df1_3[["Pges"]].to_numpy()
+
+    # df1=df_2[df_2["FREQ"] == 80] 
+    # df2=df_2[df_2["FREQ"] == 160] 
+    # df3=df_2[df_2["FREQ"] == 240] 
+    x1 = df_2[["Pges"]].to_numpy()
+    # x1 = df1[["Pges"]].to_numpy()
+    # x2 = df2[["Pges"]].to_numpy()
+    # x3 = df3[["Pges"]].to_numpy()
+
+    plt.plot([i for i in range(len(x1))], x1, color="springgreen")
+    length = len(x1)
+    # plt.plot([i+length for i in range(len(x2))], x2, color="limegreen")
+    # length += len(x2)
+    # plt.plot([i+length for i in range(len(x3))], x3, color="darkgreen")
+    # length += len(x3)
+    
+    plt.plot([i+length for i in range(len(x1_1))], x1_1, color="orchid")
+    # length += len(x1_1)
+    # plt.plot([i+length for i in range(len(x1_2))], x1_2, color="fuchsia")
+    # length += len(x1_2)
+    # plt.plot([i+length for i in range(len(x1_3))], x1_3, color="magenta")
     plt.show()
 
 #random_forrest()
