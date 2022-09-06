@@ -78,8 +78,8 @@ dir_path = os.path.dirname(os.path.realpath(__file__)) + "/"
 
 df = pd.read_csv('./ble-uart-peripheral/training/add_test.csv')
 df = df.sort_values(by=['FREQ', 'CPU_UTIL'])
-df_1 = pd.read_csv('./test_ble.csv')
-df_2 = pd.read_csv('./test_ble4.csv')
+df_1 = pd.read_csv('./test_add16.csv')
+df_2 = pd.read_csv('./test_linkedlist5.csv')
 
 print("Add2: ")
 print(df_1["Pges"].max())
@@ -392,14 +392,14 @@ def two_dimensional_plane():
     # x2 = df2[["Pges"]].to_numpy()
     # x3 = df3[["Pges"]].to_numpy()
 
-    plt.plot([i for i in range(len(x1))], x1, color="springgreen")
+    plt.scatter([i for i in range(len(x1))], x1, color="springgreen")
     length = len(x1)
     # plt.plot([i+length for i in range(len(x2))], x2, color="limegreen")
     # length += len(x2)
     # plt.plot([i+length for i in range(len(x3))], x3, color="darkgreen")
     # length += len(x3)
     
-    plt.plot([i+length for i in range(len(x1_1))], x1_1, color="orchid")
+    plt.scatter([i+length for i in range(len(x1_1))], x1_1, color="orchid")
     # length += len(x1_1)
     # plt.plot([i+length for i in range(len(x1_2))], x1_2, color="fuchsia")
     # length += len(x1_2)
