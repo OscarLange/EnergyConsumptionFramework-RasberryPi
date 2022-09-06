@@ -25,15 +25,15 @@ ina.configure(ina.RANGE_16V, ina.GAIN_1_40MV)
 stored_values = []
 
 i = 0
-while(i < 10000):
+while(i < 20000):
     read_ina219()
     i += 1
 
-file_name = "./test_ble4.csv"
+file_name = "./new_tests/test_add.csv"
 with open(file_name, 'a') as f:
     try:
         for val in stored_values:
-            f.write(val + ",160,160\n")
+            f.write(val + ",240,240\n")
     except DeviceRangeError as e:
         print('Current to large!')
 
