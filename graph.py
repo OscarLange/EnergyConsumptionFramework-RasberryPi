@@ -78,19 +78,58 @@ dir_path = os.path.dirname(os.path.realpath(__file__)) + "/"
 
 df = pd.read_csv('./ble-uart-peripheral/training/add_test.csv')
 df = df.sort_values(by=['FREQ', 'CPU_UTIL'])
-df_1 = pd.read_csv('./test_add16.csv')
-df_2 = pd.read_csv('./test_linkedlist5.csv')
+df_1 = pd.read_csv('./testopversions/test_add4.csv')
+df_2 = pd.read_csv('./testopversions/test_noop2.csv')
+df_3 = pd.read_csv('./testopversions/test_linkedlist5.csv')
+df_4 = pd.read_csv('./new_tests/test_fmul.csv')
+df_5 = pd.read_csv('./new_tests/test_malloc.csv')
 
-print("Add2: ")
-print(df_1["Pges"].max())
-print(df_1["Pges"].min())
-print(df_1["Pges"].mean())
+y = [32.3, 38, 49]
+X = [80, 160, 240]
 
-print("Add: ")
-print(df_2["Pges"].max())
-print(df_2["Pges"].min())
-print(df_2["Pges"].mean())
+coefs, residual, _, _, _ = np.polyfit(X, y, 1, full=True)
+print(coefs)
+coefs2, residual2, _, _, _ = np.polyfit(X, y, 2, full=True)
+for i in coefs2:
+    print('{:f}'.format(i))
 
+def print_values(df):
+    df_tmp = df[df["MINFREQ"] == 80]
+    df_vary = df_tmp[df_tmp["MAXFREQ"] == 240]
+
+    print("Varied frequency: ", end="")
+    print_stats(df_vary)
+
+    df_low = df_tmp[df_tmp["MAXFREQ"] == 80]
+    print("Frequency eighty: ", end="")
+    print_stats(df_low)
+
+    df_mid = df[df["MINFREQ"] == 160]
+    print("Frequency 160   : ", end="")
+    print_stats(df_mid)
+
+    df_high = df[df["MINFREQ"] == 240]
+    print("Frequency 240   : ", end="")
+    print_stats(df_high)
+
+
+
+def print_stats(df):
+    print(df["Iges"].max(), end=" | ")
+    print(df["Iges"].min(), end=" | ")
+    print(df["Iges"].mean(), end= " | ")
+    print(df["Iges"].median())
+
+# print("Idle")
+# print_values(df_1)
+# print("Add")
+# print_values(df_2)
+# print("Sub")
+print_values(df_3)
+print("Mul")
+print_values(df_4)
+print("Div")
+print_values(df_5)
 
 #add binary columns to indicate the operand type
 def combine_with_columns(df1, df2, df3, df4, df5, df6, df7, df8, df9):
