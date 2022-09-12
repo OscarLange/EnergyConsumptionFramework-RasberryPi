@@ -78,20 +78,20 @@ dir_path = os.path.dirname(os.path.realpath(__file__)) + "/"
 
 df = pd.read_csv('./ble-uart-peripheral/training/add_test.csv')
 df = df.sort_values(by=['FREQ', 'CPU_UTIL'])
-df_1 = pd.read_csv('./testopversions/test_add4.csv')
-df_2 = pd.read_csv('./testopversions/test_noop2.csv')
-df_3 = pd.read_csv('./testopversions/test_linkedlist5.csv')
-df_4 = pd.read_csv('./new_tests/test_fmul.csv')
-df_5 = pd.read_csv('./new_tests/test_malloc.csv')
+df_1 = pd.read_csv('./new_tests/test_idle.csv')
+df_2 = pd.read_csv('./new_tests_2/test_fadd.csv')
+df_3 = pd.read_csv('./new_tests_2/test_fsub.csv')
+df_4 = pd.read_csv('./new_tests_2/test_fmul.csv')
+df_5 = pd.read_csv('./new_tests_2/test_fdiv.csv')
 
-y = [32.3, 38, 49]
+y = [39.4, 52, 73]
 X = [80, 160, 240]
 
 coefs, residual, _, _, _ = np.polyfit(X, y, 1, full=True)
-print(coefs)
+print(str(coefs) + "-----" + str(residual))
 coefs2, residual2, _, _, _ = np.polyfit(X, y, 2, full=True)
 for i in coefs2:
-    print('{:f}'.format(i))
+    print(i)
 
 def print_values(df):
     df_tmp = df[df["MINFREQ"] == 80]
@@ -120,11 +120,11 @@ def print_stats(df):
     print(df["Iges"].mean(), end= " | ")
     print(df["Iges"].median())
 
-# print("Idle")
-# print_values(df_1)
-# print("Add")
-# print_values(df_2)
-# print("Sub")
+print("Idle")
+print_values(df_1)
+print("Add")
+print_values(df_2)
+print("Sub")
 print_values(df_3)
 print("Mul")
 print_values(df_4)
@@ -452,4 +452,4 @@ def two_dimensional_plane():
 #three_dimensional_scatter()
 #three_dimensional_plane()
 #seaborn_regression()
-two_dimensional_plane()
+#two_dimensional_plane()
