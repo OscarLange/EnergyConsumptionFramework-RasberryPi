@@ -79,19 +79,28 @@ dir_path = os.path.dirname(os.path.realpath(__file__)) + "/"
 df = pd.read_csv('./ble-uart-peripheral/training/add_test.csv')
 df = df.sort_values(by=['FREQ', 'CPU_UTIL'])
 df_1 = pd.read_csv('./new_tests/test_idle.csv')
-df_2 = pd.read_csv('./new_tests_2/test_fadd.csv')
-df_3 = pd.read_csv('./new_tests_2/test_fsub.csv')
+df_2 = pd.read_csv('./new_tests_2/test_linkedlist.csv')
+df_3 = pd.read_csv('./new_tests_2/test_linkedlist2.csv')
 df_4 = pd.read_csv('./new_tests_2/test_fmul.csv')
 df_5 = pd.read_csv('./new_tests_2/test_fdiv.csv')
 
-y = [39.4, 52, 73]
+y = [45.7-39, 66.1 - 51.79, 97.9 - 72.9]
 X = [80, 160, 240]
+
+freq = 80
 
 coefs, residual, _, _, _ = np.polyfit(X, y, 1, full=True)
 print(str(coefs) + "-----" + str(residual))
 coefs2, residual2, _, _, _ = np.polyfit(X, y, 2, full=True)
 for i in coefs2:
     print(i)
+
+def calc_power(freq):
+    return (coefs2[0] * freq**2) + (coefs2[1] * freq) + coefs2[2]
+
+print(calc_power(80))
+print(calc_power(160))
+print(calc_power(240))
 
 def print_values(df):
     df_tmp = df[df["MINFREQ"] == 80]
@@ -285,6 +294,31 @@ def numpy_polyfit():
 
     plt.show()
 
+
+def plot_freq():
+    y = [32, 38, 49]
+    y1 = [39, 52, 73]
+    y2 = [45, 66, 98]
+    X = [80, 160, 240]
+
+    coefs, residual, _, _, _ = np.polyfit(X, y, 2, full=True)
+    coefs1, residual1, _, _, _ = np.polyfit(X, y1, 2, full=True)
+    coefs2, residual2, _, _, _ = np.polyfit(X, y2, 2, full=True)
+
+    poly1d = np.poly1d(coefs)
+    poly1d1 = np.poly1d(coefs1)
+    poly1d2 = np.poly1d(coefs2)
+
+    plt.plot(X, poly1d(X), color = 'royalblue', label="Idle")
+    plt.plot(X, poly1d1(X), color = 'blue', label="1 core")
+    plt.plot(X, poly1d2(X), color = 'darkblue', label="2 cores")
+    
+    plt.xlabel('Frequency')
+    plt.ylabel('Current')
+    plt.legend()
+    plt.show()
+
+plot_freq()
 
 def sk_learn_ridge_regression():
     df_tmp=df2[df2["MIN_FREQ"] == 240]
