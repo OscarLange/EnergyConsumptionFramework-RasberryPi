@@ -1,7 +1,7 @@
 import binascii
 import sys
 from ina219 import INA219, DeviceRangeError
-
+import time
 
 #read ina values and store in file
 def read_ina219():
@@ -29,12 +29,12 @@ while(i < 20000):
     read_ina219()
     i += 1
 
-file_name = "./new_tests_2/test_malloc2.csv"
+file_name = "./new_tests_2/test_deep_sleep.csv"
 
 with open(file_name, 'a') as f:
     try:
         for val in stored_values:
-            f.write(val + ",240, 240\n")
+            f.write(val + ",240,240\n")
     except DeviceRangeError as e:
         print('Current to large!')
 
