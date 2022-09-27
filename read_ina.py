@@ -29,7 +29,7 @@ while(i < 20000):
     read_ina219()
     i += 1
 
-file_name = "./new_tests_2/test_deep_sleep.csv"
+file_name = "./new_tests_2/test_wifi_linkedlist.csv"
 
 with open(file_name, 'a') as f:
     try:
