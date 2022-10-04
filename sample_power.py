@@ -13,16 +13,15 @@ freq_switch = "Freq Switch"
 config_switch = "Config Switch"
 
 #test parameters
-cpu_frequencies = [80, 160, 240]
+cpu_frequencies = [160, 240]
 cpu_utilization = [25, 50, 75, 100]
-work_files = ["noop_test.csv", "add_test.csv", "sub_test.csv", "mul_test.csv", "div_test.csv", "addf_test.csv", "subf_test.csv", "mulf_test.csv", "divf_test.csv"]
-work_files = ["add_test.csv"]
+work_files = ["noop_test.csv", "add_test.csv", "sub_test.csv", "mul_test.csv", "div_test.csv", "addf_test.csv", "subf_test.csv", "mulf_test.csv", "divf_test.csv", "linkedlist_test.csv"]
 
 #determines which config is currently running
 config_index = 0
-cur_freq_index = 1
-cur_util_index = 0
-cur_work_index = 0
+cur_freq_index = 0
+cur_util_index = 2
+cur_work_index = 1
 
 work_mode = ""
 #test or training data
@@ -160,6 +159,9 @@ while 1:
                     #start another thread that reads the GPIO
                     t = Thread(target = read_ina219, args = ())
                     t.start()
+                    #start to collect means connection is closed from other side
+                    client.close()
+                    break
                 elif ("Stop collecting" in sanitized_content):
                     #stop other task
                     mutex.release()
@@ -208,17 +210,17 @@ while 1:
                         stored_values = []
                         start_mode = False
                     #split values and reformat to fit into csv file
-                    avg_value = avg_values(stored_values) 
+                    #avg_value = avg_values(stored_values) 
                     got_entry = ""
                     entries = sanitized_content.split(";")
                     needed_values = ["work_task", "main", "IDLE", "IDLE"]
                     needed_values_2 = ["MIN_FREQ", "MAX_FREQ"]
+                    appendix = ""
                     for needed_value in needed_values:
                         for entry in entries:
                             print(needed_value + " , " + entry);
                             if needed_value in entry:
-                                appendix = "," + entry.split(",")[1] + "," + entry.split(",")[2]
-                                avg_value += appendix
+                                appendix += "," + entry.split(",")[1] + "," + entry.split(",")[2]
                                 #stored_values = [value + appendix for value in stored_values]
                                 got_entry = entry
                                 entries.remove(got_entry)
@@ -228,20 +230,20 @@ while 1:
                         for entry in entries:
                             print(needed_value + " , " + entry);
                             if needed_value in entry:
-                                appendix = "," + entry.split(",")[1]
-                                avg_value += appendix
+                                appendix += "," + entry.split(",")[1]
                                 #stored_values = [value + appendix for value in stored_values]
                                 got_entry = entry
                                 entries.remove(got_entry)
                                 break
                     
                     #write back to file
-                    print("Writting: " + avg_value + "| to =>" + work_files[cur_work_index])
+                    print("Writting to =>" + work_files[cur_work_index])
                     file_name = work_mode + work_files[cur_work_index]
                     with open(file_name, 'a') as f:
                         try:
-                            f.write(avg_value)
-                            f.write("\n")
+                            for line in stored_values:
+                                f.write(line + appendix)
+                                f.write("\n")
 
                         except DeviceRangeError as e:
                             print('Current to large!')
